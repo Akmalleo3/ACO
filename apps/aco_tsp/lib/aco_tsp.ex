@@ -2,7 +2,11 @@ defmodule Aco_tsp do
   @moduledoc """
   A distributed ant colony optimizer for the Traveling Salesman Problem
   """
-  import Kernel
+
+  import Emulation, only: [send: 2, timer: 1, now: 0, whoami: 0]
+  import Kernel,
+    except: [spawn: 3, spawn: 1, spawn_link: 1, spawn_link: 3, send: 2]
+
   require Logger
 
   defstruct(
