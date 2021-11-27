@@ -1,9 +1,9 @@
-defmodule Raft.MixProject do
+defmodule Aco_tsp.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :aco,
+      app: :Aco_tsp,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

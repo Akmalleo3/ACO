@@ -1,15 +1,17 @@
-defmodule aco_tsp.ColonyManager do
+"""
+defmodule Aco_tsp.ColonyManager do
   @moduledoc """
   Colony Manager state struct
   TODO this process would coordinate across
   multiple systems, but first pass is just
   a somewhat redundant top level node for
   reporting
-  """
+
   defstruct()
 end
+"""
 
-defmodule aco_tsp.PheremoneManager do
+defmodule Aco_tsp.PheremoneManager do
   @moduledoc """
   Pheremone Manager state struct
   """
@@ -26,7 +28,7 @@ defmodule aco_tsp.PheremoneManager do
   )
 end
 
-defmodule aco_tsp.GraphManager do
+defmodule Aco_tsp.GraphManager do
   @moduledoc """
   Graph Manager state struct
   """
@@ -37,7 +39,7 @@ defmodule aco_tsp.GraphManager do
   )
 end
 
-defmodule aco_tsp.AntManager do
+defmodule Aco_tsp.AntManager do
   @moduledoc """
   Ant Manager state struct
   """
@@ -49,7 +51,7 @@ defmodule aco_tsp.AntManager do
   )
 end
 
-defmodule aco_tsp.Ant do
+defmodule Aco_tsp.Ant do
   @moduledoc """
   Ant state struct
   """
@@ -60,8 +62,8 @@ defmodule aco_tsp.Ant do
     tour: [],
     # index of the current iteration
     round: 0,
-    ant_manger: nil #process id of ant_manager
-    graph_manger: nil #process id of graph_manager
-    pheremone_manger: nil #process id of pheremone_manager
+    ant_manger: nil, #process id of ant_manager
+    graph_manger: nil, #process id of graph_manager
+    pheremone_manger: nil, #process id of pheremone_manager
   )
 end
