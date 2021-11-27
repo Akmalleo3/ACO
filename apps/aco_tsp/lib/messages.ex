@@ -11,18 +11,20 @@ defmodule Aco_tsp.ColonyManager do
 end
 """
 
-defmodule Aco_tsp.PheremoneManager do
+defmodule Aco_tsp.PheromoneManager do
   @moduledoc """
   Pheremone Manager state struct
   """
   defstruct(
     # The pheremone matrix is
-    # of type Map: vertex -> (Map: vertex->pheremoneValue)
-    pheremone_matrix: %{},
-    # index of the round for which this pheremone applies
+    # of type Map: vertex -> (Map: vertex->pheromoneValue)
+    pheromone_matrix: %{},
+    # index of the round for which this pheromone applies
     round: 0,
     # number of completed solutions received this round
     n_solutions: 0,
+    # number of ants to collect solutions form
+    n_ants: 0,
     # a list of (tour, tour cost) pairs
     solutions: []
   )
@@ -46,8 +48,10 @@ defmodule Aco_tsp.AntManager do
   defstruct(
     # the list of nodes in order that make the tour
     best_tour: [],
-    best_cost: 999_999_999, # cost of most optimal path found thus far
-    colony_manager: nil #process id of colony_manager
+    # cost of most optimal path found thus far
+    best_cost: 999_999_999,
+    # process id of colony_manager
+    colony_manager: nil
   )
 end
 
@@ -62,8 +66,11 @@ defmodule Aco_tsp.Ant do
     tour: [],
     # index of the current iteration
     round: 0,
-    ant_manger: nil, #process id of ant_manager
-    graph_manger: nil, #process id of graph_manager
-    pheremone_manger: nil, #process id of pheremone_manager
+    # process id of ant_manager
+    ant_manager: nil,
+    # process id of graph_manager
+    graph_manager: nil,
+    # process id of pheromone_manager
+    pheromone_manager: nil
   )
 end
