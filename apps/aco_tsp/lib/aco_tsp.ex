@@ -8,9 +8,6 @@ defmodule Aco_tsp do
   import Kernel,
     except: [spawn: 3, spawn: 1, spawn_link: 1, spawn_link: 3, send: 2]
 
-  import :rand.uniform()
-  import :math.pow()
-
   require Logger
 
   defstruct(
@@ -20,7 +17,7 @@ defmodule Aco_tsp do
     # heuristic visibility importance
     beta: 3,
     # Pheromone update constant
-    Q: 1,
+    q_val: 1,
     # Pheromone persistence coefficient
     rho: 0.99,
     # Pheromone initial value
@@ -43,19 +40,22 @@ defmodule Aco_tsp do
   # Begin Helper functions
   ##########################
 
-  def tour_cost(tour) do
-    0
+  def tour_cost(tour, state, cost) do
+    case length(tour) do
+      1 -> cost
+      _ -> [e1,e2|tail] = tour
+           tour_cost([e2|tail], state, cost + Map.get(Map.get(state.graph, e1, %{}), e2, 0))
+    end
   end
 
-  def is_tour_complete(tour) do
-    false
+  def is_tour_complete(tour, num_nodes) do
+    length(tour) == num_nodes
   end
 
   @doc
   """
   Send Pheromone Request and Return the response
   """
-
   @spec ant_get_pheromones(%Aco_tsp.Ant{}, Map) :: []
   def ant_get_pheromones(state, neighbors) do
     send(
@@ -72,23 +72,24 @@ defmodule Aco_tsp do
     end
   end
 
-  def my_choice(random_num, [hd_p | tail_p], idx) do
-    cond do
-      idx == 0 ->
+  def my_choice(random_num, probs, idx) do
+    IO.puts("My choice #{inspect(probs)} index: #{idx}")
+
+    case length(probs) do
+      1 ->
+        idx
+
+      _ ->
+        [hd_p | tail_p] = probs
+
         cond do
           random_num <= hd_p ->
-            0
-            my_choice(random_num, [hd_p | tail_p], 1)
+            idx
+
+          true ->
+            my_choice(random_num, [hd_p + hd(tail_p)] ++ tl(tail_p), idx + 1)
         end
-
-      random_num >= hd_p and random_num <= hd(tail_p) ->
-        idx
-        my_choice(random_num, tail_p, idx + 1)
     end
-  end
-
-  def my_choice(random_num, [hd | nil], idx) do
-    idx
   end
 
   @spec ant_make_move(%Aco_tsp.Ant{}, Map, []) :: %Aco_tsp.Ant{}
@@ -97,67 +98,76 @@ defmodule Aco_tsp do
 
     # (tau)^alpha
     taus = Enum.map(pheromones, fn x -> :math.pow(x, state.alpha) end)
-
+    #IO.puts("taus: #{inspect(taus)}")
     # (1/cost)^Beta
     visibilities =
       Enum.map(Map.values(neighbors), fn x -> :math.pow(1 / x, state.beta) end)
 
+    #IO.puts("visibilities: #{inspect(visibilities)}")
     zipper = Enum.zip(taus, visibilities)
-    products = Enum.map(zipper, fn x, y -> x * y end)
-    total_prob = sum(products)
+    #IO.puts("zipped: #{inspect(zipper)}")
+    products = Enum.map(zipper, fn {x, y} -> x * y end)
+    total_prob = Enum.sum(products)
     probabilities = Enum.map(products, fn x -> x / total_prob end)
-    IO.puts(probabilities)
+    #IO.puts("Sum of prob: #{inspect(Enum.sum(probabilities))}")
 
     # Draw a number uniformly between 0 and 1
     # and use it to make a choice
     random = :rand.uniform()
-    index_next_node = my_choice(random, probabilities)
-    IO.puts("Chooding index: #{index_next_node}")
+    index_next_node = my_choice(random, probabilities, 0)
+    #IO.puts("Chooding index: #{index_next_node}")
     choice = neighbors[index_next_node]
-    IO.puts("Ant Chose node: #{choice}")
+    #IO.puts("Ant Chose node: #{choice}")
 
     # Update the state and return
-    %{state | tour: choice ++ tour}
+    %{state | tour: [choice] ++ state.tour}
   end
 
   def clear_update_matrix(state) do
     %{
       state
       | update_matrix:
-          Enum.map(state.update_matrix, fn {k, v} ->
-            Enum.map(v, fn {k, v} -> {k, 0} end)
-          end)
+          Map.new(
+            Enum.map(state.update_matrix, fn {k, v} ->
+              {k, Map.new(Enum.map(v, fn {k, v} -> {k, 0} end))}
+            end)
+          )
     }
   end
 
-  def update_update_matrix(state, [hd_tour | tail_tour], cost) do
-    e1 = hd_tour
-    e2 = hd(tail_tour)
+  def update_update_matrix(state, tour, cost) do
+    case length(tour) do
+      1 ->
+        state
 
-    # For edge in one direction
-    state = %{
-      state
-      | update_matrix:
-          Map.update(state.update_matrix, e1, fn m ->
-            Map.update(m, e2, fn x -> x + state.Q / cost end)
-          end)
-    }
+      _ ->
+        [hd_tour | tail_tour] = tour
 
-    # For the edge in the opposite direction
-    state = %{
-      state
-      | update_matrix:
-          Map.update(state.update_matrix, e2, fn m ->
-            Map.update(m, e1, fn x -> x + state.Q / cost end)
-          end)
-    }
+        e1 = hd_tour
+        e2 = hd(tail_tour)
 
-    update_update_matrix(state, tail_tour, cost)
-  end
+        q = state.q_val
 
-  # end of the list
-  def update_update_matrix(state, [hd_tour | nil]) do
-    state
+        # For edge in one direction
+        state = %{
+          state
+          | update_matrix:
+              Map.update(state.update_matrix, e1, %{}, fn m ->
+                Map.update(m, e2, 0, fn x -> x + q / cost end)
+              end)
+        }
+
+        # For the edge in the opposite direction
+        state = %{
+          state
+          | update_matrix:
+              Map.update(state.update_matrix, e2, %{}, fn m ->
+                Map.update(m, e1, 0, fn x -> x + q / cost end)
+              end)
+        }
+
+        update_update_matrix(state, tail_tour, cost)
+    end
   end
 
   # tau(t+1) = rho*tau(t) + update_matrix
@@ -165,11 +175,20 @@ defmodule Aco_tsp do
     %{
       state
       | pheromone_matrix:
-          Map.merge(state.pheromone_matrix, state.update_matrix, fn _k,
-                                                                    v1,
-                                                                    v2 ->
-            state.rho * v1 + v2
-          end)
+          Map.new(
+            Enum.zip(
+              Map.keys(state.pheromone_matrix),
+              Enum.map(Map.keys(state.pheromone_matrix), fn k ->
+                Map.merge(
+                  Map.get(state.pheromone_matrix, k, %{}),
+                  Map.get(state.update_matrix, k, %{}),
+                  fn _k, v1, v2 ->
+                    state.rho * v1 + v2
+                  end
+                )
+              end)
+            )
+          )
     }
   end
 
@@ -194,7 +213,8 @@ defmodule Aco_tsp do
     pm_state = %Aco_tsp.PheromoneManager{
       pheromone_matrix: g,
       n_ants: state.n_ants,
-      Q: state.Q
+      q_val: state.q_val,
+      rho: state.rho
     }
 
     pheromone_manager(pm_state)
@@ -284,7 +304,6 @@ defmodule Aco_tsp do
   This function implements the state machine for
   a process that is a pheromone_manager
   """
-
   @spec pheromone_manager(%Aco_tsp.PheromoneManager{}) :: no_return()
   def pheromone_manager(state) do
     receive do
@@ -363,14 +382,14 @@ defmodule Aco_tsp do
     receive do
       {sender, %Aco_tsp.EdgesRequest{tour: tour}} ->
         # Check if tour is complete, if so return the cost
-        case is_tour_complete(tour) do
+        case is_tour_complete(tour, length(Map.keys(state.graph))) do
           true ->
             send(
               sender,
               %Aco_tsp.EdgesResponse{
                 tour_complete: true,
                 neighbors: %{},
-                cost: tour_cost(tour)
+                cost: tour_cost(tour,state,0)
               }
             )
 

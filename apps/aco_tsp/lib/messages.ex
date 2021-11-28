@@ -30,7 +30,8 @@ defmodule Aco_tsp.PheromoneManager do
     n_ants: 0,
     # a list of (tour, tour cost) pairs
     solutions: [],
-    Q: nil
+    q_val: nil,
+    rho: nil
   )
 end
 
