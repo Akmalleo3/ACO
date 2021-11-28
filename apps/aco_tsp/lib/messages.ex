@@ -19,6 +19,9 @@ defmodule Aco_tsp.PheromoneManager do
     # The pheremone matrix is
     # of type Map: vertex -> (Map: vertex->pheromoneValue)
     pheromone_matrix: %{},
+    # contains running total sum of pheromone update values
+    # for next round
+    update_matrix: %{},
     # index of the round for which this pheromone applies
     round: 0,
     # number of completed solutions received this round
@@ -26,7 +29,8 @@ defmodule Aco_tsp.PheromoneManager do
     # number of ants to collect solutions form
     n_ants: 0,
     # a list of (tour, tour cost) pairs
-    solutions: []
+    solutions: [],
+    Q: nil
   )
 end
 
@@ -51,7 +55,12 @@ defmodule Aco_tsp.AntManager do
     # cost of most optimal path found thus far
     best_cost: 999_999_999,
     # process id of colony_manager
-    colony_manager: nil
+    colony_manager: nil,
+    # number of ants to keep track of
+    n_ants: nil,
+    # number of solutions collected
+    n_solutions: 0,
+    round: 0
   )
 end
 
@@ -71,6 +80,64 @@ defmodule Aco_tsp.Ant do
     # process id of graph_manager
     graph_manager: nil,
     # process id of pheromone_manager
-    pheromone_manager: nil
+    pheromone_manager: nil,
+    # Pheromone trial importance
+    alpha: nil,
+    # heuristic visibility importance
+    beta: nil
+  )
+end
+
+defmodule Aco_tsp.EdgesRequest do
+  @moduledoc """
+  Sent by Ant to Graph Manager to get list of incident edges
+  """
+  defstruct(tour: [])
+end
+
+defmodule Aco_tsp.EdgesResponse do
+  @moduledoc """
+  Sent by Graph Manager to Ant in Response to request
+  """
+  defstruct(
+    # true if every node visited
+    tour_complete: false,
+    # populate if tour_complete
+    cost: nil,
+    # map with key: vertex_id, val: edge cost
+    neighbors: %{}
+  )
+end
+
+defmodule Aco_tsp.PheromoneRequest do
+  @moduledoc """
+  Sent by Ant to Pheromone Manager to get list of pheromone values
+  """
+  defstruct(
+    round: nil,
+    current_node: nil,
+    neighbors: []
+  )
+end
+
+defmodule Aco_tsp.PheromoneResponse do
+  @moduledoc """
+  Sent by Ant to Pheromone Manager to get list of pheromone values
+  """
+  defstruct(
+    # in the order of the neighbors
+    pheromones: []
+  )
+end
+
+defmodule Aco_tsp.SolutionReport do
+  @moduledoc """
+  From Ant to Ant Manager: solution found
+  """
+  defstruct(
+    # in order list of nodes
+    tour: [],
+    cost: nil,
+    round: nil
   )
 end
