@@ -1,4 +1,4 @@
-"""
+
 defmodule Aco_tsp.ColonyManager do
   @moduledoc """
   Colony Manager state struct
@@ -6,10 +6,12 @@ defmodule Aco_tsp.ColonyManager do
   multiple systems, but first pass is just
   a somewhat redundant top level node for
   reporting
-
-  defstruct()
+  """
+  defstruct(
+    best_tour: [],
+    best_cost: 999999999
+  )
 end
-"""
 
 defmodule Aco_tsp.PheromoneManager do
   @moduledoc """
@@ -85,7 +87,8 @@ defmodule Aco_tsp.Ant do
     # Pheromone trial importance
     alpha: nil,
     # heuristic visibility importance
-    beta: nil
+    beta: nil,
+    n_nodes: nil
   )
 end
 
