@@ -33,15 +33,14 @@ defmodule Acotsp_Test do
     # IO.puts("Random number: #{random}")
     # IO.puts("Index chosen: #{idx}")
 
-    ant_state = %Aco_tsp.Ant{alpha: 2 , beta: 3}
+    ant_state = %Aco_tsp.Ant{alpha: 2, beta: 3}
     current_node = 3
-    neighbors =  %{1=> 5, 2=> 1, 4=>3}
-    pheromones = [0.3,0.2,0.1]
+    neighbors = %{1 => 5, 2 => 1, 4 => 3}
+    pheromones = [0.3, 0.2, 0.1]
     IO.puts("ant_state before: #{inspect(ant_state)}")
 
     ant_state = Aco_tsp.ant_make_move(ant_state, neighbors, pheromones)
     IO.puts("ant_state after: #{inspect(ant_state)}")
-
 
     update_mat = %{
       1 => %{2 => 10, 3 => 5, 4 => 2},
@@ -64,14 +63,40 @@ defmodule Acotsp_Test do
     tour = [3, 2, 1, 4]
     cost = 13
     state = Aco_tsp.update_update_matrix(state, tour, cost)
-    #IO.puts("Updated matrix #{inspect(state.update_matrix)}")
+    # IO.puts("Updated matrix #{inspect(state.update_matrix)}")
 
-    #IO.puts("Pmone Matrix before #{inspect(state.pheromone_matrix)}")
+    # IO.puts("Pmone Matrix before #{inspect(state.pheromone_matrix)}")
     state = Aco_tsp.update_pheromone_matrix(state)
-    #IO.puts("Pmone Matrix after #{inspect(state.pheromone_matrix)}")
+    # IO.puts("Pmone Matrix after #{inspect(state.pheromone_matrix)}")
 
     g_state = %Aco_tsp.GraphManager{graph: update_mat}
     cost = Aco_tsp.tour_cost(tour, g_state, 0)
     IO.puts("Tour cost: #{cost}")
+  end
+
+  test "baby problem" do
+    Emulation.init()
+
+    graph = %{
+      1 => %{2 => 10, 3 => 5, 4 => 2},
+      2 => %{1 => 10, 3 => 1, 4 => 6},
+      3 => %{1 => 5, 2 => 1, 4 => 3},
+      4 => %{1 => 2, 2 => 6, 3 => 3}
+    }
+
+    config = Aco_tsp.new_configuration(3, graph)
+    IO.puts(inspect(config))
+    process = spawn(:cm, fn -> Aco_tsp.start_colony(config) end)
+
+    handle = Process.monitor(process)
+
+    # Timeout
+    receive do
+      {:DOWN, ^handle, _, _, reason} -> IO.puts("Received down #{reason}")
+    after
+      30_000 -> assert false
+    end
+  after
+    Emulation.terminate()
   end
 end
