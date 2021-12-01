@@ -76,8 +76,11 @@ defmodule Aco_tsp do
       }
     )
 
+    # try again after some seconds
     receive do
       {sender, %Aco_tsp.PheromoneResponse{pheromones: pheromones}} -> pheromones
+    after
+      5_000 -> ant_get_pheromones(state, neighbors)
     end
   end
 
@@ -109,20 +112,36 @@ defmodule Aco_tsp do
   @spec ant_make_move(%Aco_tsp.Ant{}, Map, []) :: %Aco_tsp.Ant{}
   def ant_make_move(state, neighbors, pheromones) do
     # Calculate the probabilities of each move
-    #IO.puts("Neighbors: #{inspect(neighbors)}")
+    # IO.puts("Neighbors: #{inspect(neighbors)}")
+    # IO.puts("vals: #{inspect(Map.values(neighbors))}")
+    # IO.puts("pheromones: #{inspect(pheromones)}")
     # (tau)^alpha
     taus = Enum.map(pheromones, fn x -> :math.pow(x, state.alpha) end)
     # IO.puts("taus: #{inspect(taus)}")
     # (1/cost)^Beta
+
     visibilities =
-      Enum.map(Map.values(neighbors), fn x -> :math.pow(1 / x, state.beta) end)
+      Enum.map(Map.values(neighbors), fn x ->
+        case x < 0.0000000001 do
+          true -> 0
+          false -> :math.pow(1 / x, state.beta)
+        end
+      end)
 
     # IO.puts("visibilities: #{inspect(visibilities)}")
     zipper = Enum.zip(taus, visibilities)
     # IO.puts("zipped: #{inspect(zipper)}")
     products = Enum.map(zipper, fn {x, y} -> x * y end)
     total_prob = Enum.sum(products)
-    probabilities = Enum.map(products, fn x -> x / total_prob end)
+    # IO.puts("Total prob #{total_prob}")
+    probabilities =
+      Enum.map(products, fn x ->
+        case total_prob < 0.0000000001 do
+          true -> 1 / length(products)
+          false -> x / total_prob
+        end
+      end)
+
     # IO.puts("Sum of prob: #{inspect(Enum.sum(probabilities))}")
 
     # Draw a number uniformly between 0 and 1
@@ -131,7 +150,7 @@ defmodule Aco_tsp do
     index_next_node = my_choice(random, probabilities, 0)
     # IO.puts("Chooding index: #{index_next_node}")
     choice = get_elem(Map.keys(neighbors), index_next_node)
-    #IO.puts("Ant Chose node: #{choice}")
+    # IO.puts("Ant Chose node: #{choice}")
 
     # Update the state and return
     %{state | tour: [choice] ++ state.tour}
@@ -252,11 +271,9 @@ defmodule Aco_tsp do
         true
 
       _ ->
-        IO.puts("spawning ant: #{n_left}")
         # pick a random initial vertex:
         start = :random.uniform(n_nodes)
         a_state = %{a_state | tour: [start]}
-        IO.puts("pid for ant: #{String.to_atom("ant#{n_left}")}}")
         spawn(String.to_atom("ant#{n_left}"), fn -> ant(a_state) end)
         make_ant(a_state, n_left - 1, n_nodes)
     end
@@ -307,20 +324,31 @@ defmodule Aco_tsp do
   def colony_manager(state) do
     # receive best solution from ant_manager for this iteration and report it
     receive do
-      {sender, %Aco_tsp.SolutionReport{tour: best_tour, cost: cost, round: round}} ->
+      {sender,
+       %Aco_tsp.SolutionReport{tour: best_tour, cost: cost, round: round}} ->
+        state =
+          cond do
+            state.best_cost == nil ->
+              %{state | best_cost: cost, best_tour: best_tour}
 
-        state = cond do
-          state.best_cost == nil ->
-            %{state | best_cost: cost, best_tour: best_tour}
+            cost < state.best_cost ->
+              IO.puts(
+                "Colony Manager received new optimal tour of cost #{cost}  " <>
+                  "in round #{round}: #{inspect(best_tour)}"
+              )
 
-          cost < state.best_cost  ->
-          IO.puts(
-            "Colony Manager received new optimal tour of cost #{cost}  " <>
-              "in round #{round}: #{inspect(best_tour)}"
-          )
-          %{state | best_cost: cost, best_tour: best_tour}
-          true -> state # seen better
-        end
+              %{state | best_cost: cost, best_tour: best_tour}
+
+            # seen better
+            true ->
+              IO.puts(
+                "Colony Manager received less optimal tour of cost #{cost}  " <>
+                  "in round #{round}: #{inspect(best_tour)}"
+              )
+
+              state
+          end
+
         colony_manager(state)
     after
       45_000 ->
@@ -355,14 +383,18 @@ defmodule Aco_tsp do
             send(sender, %Aco_tsp.PheromoneResponse{pheromones: pmones})
 
           false ->
-            IO.puts("received pheromone request for round #{round}")
-            IO.puts("My current round is #{state.round}")
+            :ok
+            # IO.puts(
+            #  "In #{state.round} received pheromone request for round #{round}"
+            # )
+
+            # IO.puts("Received: #{state.n_solutions}. Dropping")
             # resend it to the back of the queue?
-            send(whoami(), %Aco_tsp.PheromoneRequest{
-              round: round,
-              current_node: node,
-              neighbors: neighbors
-            })
+            # send(whoami(), %Aco_tsp.PheromoneRequest{
+            #  round: round,
+            #  current_node: node,
+            #  neighbors: neighbors
+            # })
         end
 
         pheromone_manager(state)
@@ -370,14 +402,16 @@ defmodule Aco_tsp do
       {sender, %Aco_tsp.SolutionReport{tour: tour, cost: cost, round: round}} ->
         case round == state.round do
           false ->
-            IO.puts("Received Solution Report for for round #{round}")
-            IO.puts("My round is #{state.round}")
+            :ok
 
-            send(whoami(), %Aco_tsp.SolutionReport{
-              tour: tour,
-              cost: cost,
-              round: round
-            })
+          # IO.puts("Received Solution Report for for round #{round}")
+          # IO.puts("My round is #{state.round}. Dropping")
+
+          # send(whoami(), %Aco_tsp.SolutionReport{
+          #  tour: tour,
+          #  cost: cost,
+          #  round: round
+          # })
 
           true ->
             # add to the update matrix
@@ -426,9 +460,9 @@ defmodule Aco_tsp do
 
           false ->
             # Otherwise return the list of neighbors and edge costs
-            #IO.puts("Retrieving neighbors for node #{hd(tour)}")
+            # IO.puts("Retrieving neighbors for node #{hd(tour)}")
             neighbors = Map.get(state.graph, hd(tour), %{})
-            #IO.puts("Neighbors: #{inspect(neighbors)}")
+            # IO.puts("Neighbors: #{inspect(neighbors)}")
             # deleting nodes already visited in the tour
             neighbors = Map.drop(neighbors, tour)
 
@@ -457,7 +491,7 @@ defmodule Aco_tsp do
     # collect all solutions for a single round
     receive do
       {sender, %Aco_tsp.SolutionReport{tour: tour, cost: cost, round: round}} ->
-        #IO.puts("Ant Manager given tour: #{inspect(tour)}, cost #{cost}")
+        # IO.puts("Ant Manager given tour: #{inspect(tour)}, cost #{cost}")
 
         if round != state.round do
           IO.puts("Ant manager received Solution for round #{round}")
@@ -474,7 +508,7 @@ defmodule Aco_tsp do
         state =
           case cost < state.best_cost do
             true ->
-              #IO.puts("New best tour! #{inspect(tour)}")
+              # IO.puts("New best tour! #{inspect(tour)}")
               %{state | best_tour: tour, best_cost: cost}
 
             false ->
@@ -491,6 +525,7 @@ defmodule Aco_tsp do
                 cost: state.best_cost,
                 round: state.round
               }
+
               send(state.colony_manager, report)
 
               # reset the state
@@ -506,7 +541,6 @@ defmodule Aco_tsp do
 
         ant_manager(state)
     end
-
   end
 
   @doc
@@ -518,7 +552,7 @@ defmodule Aco_tsp do
   @spec ant(%Aco_tsp.Ant{}) :: no_return()
   def ant(state) do
     # Request possible moves
-    #IO.puts("Ant #{whoami()} sending Edge Request")
+    # IO.puts("Ant #{whoami()} sending Edge Request")
 
     send(
       state.graph_manager,
@@ -532,12 +566,13 @@ defmodule Aco_tsp do
          cost: cost,
          neighbors: neighbors
        }} ->
-        #IO.puts("Ant received Edge Response: #{inspect(neighbors)}")
+        # IO.puts("Ant received Edge Response: #{inspect(neighbors)}")
 
         state =
           case tour_complete do
             # is tour completed? Send to pheromone manager
             # and to ant manager
+
             true ->
               solution = %Aco_tsp.SolutionReport{
                 tour: state.tour,
@@ -547,20 +582,27 @@ defmodule Aco_tsp do
 
               send(state.pheromone_manager, solution)
               send(state.ant_manager, solution)
-              %{state | round: state.round + 1, tour: [:rand.uniform(state.n_nodes)]}
+
+              %{
+                state
+                | round: state.round + 1,
+                  tour: [:rand.uniform(state.n_nodes)]
+              }
 
             # otherwise get pheromones for possible moves
             false ->
               pheromones = ant_get_pheromones(state, neighbors)
-              #IO.puts("Ant received pheromones: #{inspect(pheromones)}")
+              # IO.puts("Ant received pheromones: #{inspect(pheromones)}")
               # Select an edge and add to solution
               ant_make_move(state, neighbors, pheromones)
               # IO.puts("Ant made a move: #{inspect(state.tour)}")
           end
 
         ant(state)
+    after
+      5_000 ->
+        IO.puts("Waiting on Solution Report!")
+        ant(state)
     end
-
-    ant(state)
   end
 end

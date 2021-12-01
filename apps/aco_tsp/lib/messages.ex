@@ -1,4 +1,3 @@
-
 defmodule Aco_tsp.ColonyManager do
   @moduledoc """
   Colony Manager state struct
@@ -9,7 +8,7 @@ defmodule Aco_tsp.ColonyManager do
   """
   defstruct(
     best_tour: [],
-    best_cost: 999999999
+    best_cost: 999_999_999
   )
 end
 
