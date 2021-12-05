@@ -295,9 +295,8 @@ defmodule Aco_tsp do
 
   @spec start_colony(%Aco_tsp{}) :: no_return()
   def start_colony(state) do
-    IO.puts("Starting colony")
     state = %{state | pid: whoami()}
-    IO.puts(inspect(state))
+
     # spawn underling managers and all of the ants
     h1 = spawn(:pm, fn -> make_pheromone_manager(state) end)
     h2 = spawn(:gm, fn -> make_graph_manager(state) end)
@@ -307,6 +306,7 @@ defmodule Aco_tsp do
     make_ants(state)
     # become colony manager
     cm_state = %Aco_tsp.ColonyManager{}
+    IO.puts("Starting at #{Emulation.emu_to_millis(Emulation.now())}")
     colony_manager(cm_state)
   end
 
@@ -333,7 +333,7 @@ defmodule Aco_tsp do
 
             cost < state.best_cost ->
               IO.puts(
-                "Colony Manager received new optimal tour of cost #{cost}  " <>
+                "at #{Emulation.emu_to_millis(Emulation.now())} Colony Manager received new optimal tour of cost #{cost}  " <>
                   "in round #{round}: #{inspect(best_tour)}"
               )
 
@@ -342,7 +342,7 @@ defmodule Aco_tsp do
             # seen better
             true ->
               IO.puts(
-                "Colony Manager received less optimal tour of cost #{cost}  " <>
+                "at #{Emulation.emu_to_millis(Emulation.now())} Colony Manager received less optimal tour of cost #{cost}  " <>
                   "in round #{round}: #{inspect(best_tour)}"
               )
 
