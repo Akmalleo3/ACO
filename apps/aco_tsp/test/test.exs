@@ -125,7 +125,7 @@ defmodule Acotsp_Test do
     Emulation.init()
     graph = Acotsp_graphs.a280()
 
-    config = Aco_tsp.new_configuration(1000, graph)
+    config = Aco_tsp.new_configuration(5000, graph)
     IO.puts(inspect(config))
     process = spawn(:cm, fn -> Aco_tsp.start_colony(config) end)
 
@@ -135,7 +135,7 @@ defmodule Acotsp_Test do
     receive do
       {:DOWN, ^handle, _, _, reason} -> IO.puts("Received down #{reason}")
     after
-      1_200_000 -> assert true
+      2_400_000 -> assert true
     end
   after
     Emulation.terminate()

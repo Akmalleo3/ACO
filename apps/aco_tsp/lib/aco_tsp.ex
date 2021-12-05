@@ -351,7 +351,7 @@ defmodule Aco_tsp do
 
         colony_manager(state)
     after
-      45_000 ->
+      200_000 ->
         IO.puts("No SOlution reported")
         true
     end
