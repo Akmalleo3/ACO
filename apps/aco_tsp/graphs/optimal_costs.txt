@@ -1,4 +1,4 @@
 ch130 Optimal tour cost: 6045.299870915394
 bays29 Optimal tour cost: 1955
 eil76 Optimal tour cost: 531.9401299133115
- a280 Optimal tour cost: 2568.8811037431624
+a280 Optimal tour cost: 2568.8811037431624

@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx, latexsym, amsmath, amssymb, amsthm}
+\usepackage{multicol}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=16mm,
+ top=10mm,
+ }
+\title{Final Project Report}
+\author{Andrea Malleo}
+\begin{document}
+
+\maketitle
+\section{Abstract}
+
+
+\begin{multicols*}{2}
+    \section{Introduction}
+
+
+\section{Related work}
+The principal paper I intend to build my work off of is \cite{star1}. They are the
+inspiration for this project, as they built an actor model implementation
+using Akka, a toolkit for building concurrent message driven applications 
+for Scala. Their paper outlines a hierarchy of processes in their architecture,
+the bottom layer, representing ants, being the most ubiquitous, with each 
+layer of managers collecting and aggragating state updates from the layer
+beneath it. In this way the optimal path bubbles up and is only completely 
+known by the root computation node, although note that this node does 
+not control its underlings and therefore differs from the master/slave model. 
+The authors of this paper are building off of \cite{multiagent} which
+reformulates the classical algorithm in a multi-agent framework.
+
+Of course, for the actual computation involved in the TSP algorithm, the 
+classical sources \cite{Dorigo1999AntCO} and \cite{Dorigo1997AntCS} will 
+be referenced. 
+
+\section{Methods}
+There are five process types running in the system: the ant,
+the graph manager, the pheromone manager, the ant manager, and the colony manager.
+
+The most ubiquitous of these at runtime is the ant process, 
+each instance performing the independent actions and state transitions of a single ant. 
+At the beginning of each iteration, the ant requests the set of edges from
+the edge manager process and waits for the response. If the 
+response indicates that the tour of the ant is complete, the ant 
+sends up its Solution Report (the order of nodes and cost) to both the pheromone manager 
+and the ant manager and then transitions into the next round. Otherwise,
+the edge response will include the list of edges left in the graph and their respective costs.
+The ant then forms a pheromone request for this set of edges and sends it to the pheromone manager.
+Following a response, the ant will compute the probability distribution over the set of edges
+emanating from node i to node j as: 
+\begin{flalign*}
+    p_j(t) = \frac{[\tau_{ij}(t)]^{\alpha} [\eta_{ij}(t)]^{\beta} }{\Sigma_{k \in \text{edges}} [\tau_{ik}(t)]^{\alpha} [\eta_{ik}(t)]^\beta}
+\end{flalign*}
+where $\tau_{ij}(t)$ is the intensity of the pheromone trail on edge $ij$ 
+and $\eta_{ij}$ is one over the edge cost. The ant then draws from this and makes its move, before the cycle repeats. 
+
+The Graph Manager holds the graph: a dictionary with node numbers as keys, mapping to 
+a dictionary holding key, value pairs of every other node and the cost of this edge 
+between the two. Note that the graphs on which the Travelling Salesman Problem is run 
+are complete, so space requirement is $n^2$ in the number of nodes. 
+The Graph Manager loop simply services edge requests that come in, first checking
+to see for a completed tour, and otherwise pulling up the total set of neighbors 
+and edge costs for a given node and dropping from this set any nodes already visited
+in this tour. Note that the state contained in the Graph Manager is constant 
+and therefore valid indefinitely. As such, it needn't care about which ant 
+is making a request or what state that ant is in.  
+
+This differs significantly from the Pheromone Manager. Recall that the 
+end of every complete tour, the ant sends up the order of its nodes 
+and the tour cost to the Pheromone Manager. This is so that the ant's
+pheromones may be sprinkled along its trail. Precisely, for ant k,
+the pheromone contributions to the graph for a given round is 
+\begin{flalign*}
+    \Delta \tau_{ij} = \begin{cases}
+        \frac{Q}{C_k} & \text{if kth ant uses edge (i,j)} \\
+        0 & \text{otherwise}\\
+    \end{cases}
+\end{flalign*}
+Where Q is a parameter, set to 1 here, and $C_k$ is the cost of 
+the tour for ant k.
+The Pheromone Manager must only service requests for the pheromone matrix for 
+a given round $m$ and simultaneously collect the completed tour reports from all 
+of the ants in order to compute the pheromone matrix for round $m+1$. To 
+enforce this, Requests and Reports contains a field for the round number,
+and the Pheromone Manager will drop any Pheromone Requests or Solution Reports 
+from the ants marked for a different round from the Manager's.
+The Pheromone Manager counts how many Solution Reports it has 
+received in any round, and once one from each ant has come in, the pheromone matrix 
+needs to be replaced for the next round. As a time saving optimization, there 
+are actually two pheromone matrices kept by the Manager, the first is the live one for 
+the current round, and the second is the working matrix for the next. As tours
+come in, the pheromone contributions are accumulated for all of the edges in the 
+working matrix, and once it is time to transition to the next round, the live 
+pheromone matrix is updated as 
+\begin{flalign*}
+    \tau_{ij}(t+1) = \rho \tau_{ij}(t) + \Sigma_{k=1}^n \Delta \tau^k_{ij}
+\end{flalign*}
+where $\rho$ represents the pheromone persistence coefficient and the 
+sum is over $n$ ants. Note that if a Request or Solution comes in from an ant 
+for the wrong round, it is simply dropped on the floor, and the ant will wait 
+five seconds before resending the message. The Pheromone Manager's round increment 
+serves as a means of synchronization across the independent ant processes.
+
+The second process collecting Solution Reports from ants is the Ant Manager. 
+In a similar fashion as just described, the Ant Manager only accepts Solutions 
+indexed by the correct round, tracking the lowest cost tour received by any 
+of the ants, and reporting the final best result up the hierarchy to the Colony Manager.
+
+The Colony Manager: Future Work
+\section{Experiments}
+
+\section{Conclusion}
+
+\end{multicols*}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+
+\end{document}

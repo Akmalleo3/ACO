@@ -1,0 +1,35 @@
+bays29:
+Tour cost 2223 #Ants: 29 time: 1.5622
+Tour cost 2055 #Ants: 29 time: 3.1332
+Tour cost 2055 #Ants: 29 time: 6.3116
+Tour cost 2039 #Ants: 29 time: 15.2037
+Tour cost 2043 #Ants: 60 time: 3.0433
+Tour cost 2032 #Ants: 60 time: 6.114
+Tour cost 2038 #Ants: 60 time: 12.4329
+Tour cost 2034 #Ants: 60 time: 31.6072
+Tour cost 2038 #Ants: 120 time: 6.2619
+Tour cost 2038 #Ants: 120 time: 12.7408
+Tour cost 2062 #Ants: 120 time: 25.4507
+Tour cost 2039 #Ants: 120 time: 62.9358
+Tour cost 2062 #Ants: 240 time: 12.4612
+Tour cost 2020 #Ants: 240 time: 25.55
+Tour cost 2020 #Ants: 240 time: 51.7567
+Tour cost 2020 #Ants: 240 time: 130.852
+
+eil76:
+Tour cost 650 #Ants: 76 time: 25.9703
+Tour cost 605 #Ants: 76 time: 53.4476
+Tour cost 567 #Ants: 76 time: 107.5342
+Tour cost 553 #Ants: 76 time: 270.5629
+Tour cost 573 #Ants: 150 time: 52.5879
+Tour cost 553 #Ants: 150 time: 105.5475
+Tour cost 562 #Ants: 150 time: 213.8296
+Tour cost 561 #Ants: 150 time: 537.0792
+Tour cost 561 #Ants: 300 time: 107.0223
+Tour cost 563 #Ants: 300 time: 213.0618
+Tour cost 555 #Ants: 300 time: 429.6347
+Tour cost 557 #Ants: 300 time: 1079.5879
+Tour cost 559 #Ants: 600 time: 211.8709
+Tour cost 562 #Ants: 600 time: 429.8841
+Tour cost 558 #Ants: 600 time: 862.3127
+Tour cost 557 #Ants: 600 time: 2161.5323

@@ -13,7 +13,7 @@ defmodule Aco_tsp do
   defstruct(
     # parameters in paper
     # Pheromone trial importance
-    alpha: 2,
+    alpha: 1, #2 (1 seems to be a little better)
     # heuristic visibility importance
     beta: 3,
     # Pheromone update constant
@@ -241,7 +241,7 @@ defmodule Aco_tsp do
          Enum.reduce(v, %{}, fn {kk, vv}, m -> Map.put(m, kk, state.tau0) end)}
       end)
 
-    IO.puts(inspect(g))
+    #IO.puts(inspect(g))
 
     pm_state = %Aco_tsp.PheromoneManager{
       pheromone_matrix: g,
@@ -341,10 +341,10 @@ defmodule Aco_tsp do
 
             # seen better
             true ->
-              IO.puts(
-                "at #{Emulation.emu_to_millis(Emulation.now())} Colony Manager received less optimal tour of cost #{cost}  " <>
-                  "in round #{round}: #{inspect(best_tour)}"
-              )
+              #IO.puts(
+              #  "at #{Emulation.emu_to_millis(Emulation.now())} Colony Manager received less optimal tour of cost #{cost}  " <>
+              #    "in round #{round}: #{inspect(best_tour)}"
+              #)
 
               state
           end
@@ -601,7 +601,7 @@ defmodule Aco_tsp do
         ant(state)
     after
       5_000 ->
-        IO.puts("Waiting on Solution Report!")
+        IO.puts("Waiting on Edge Request!")
         ant(state)
     end
   end
