@@ -187,7 +187,7 @@ ax3.legend()
 ax4.plot(convertToSecs(ch130_1000_time), ch130_1000_cost, label='distributed')
 ax4.plot(acopy_ch130_1000_time, acopy_ch130_1000_cost, label='serial')
 ax4.legend()
-ax4.set_title("600 ants")
+ax4.set_title("1000 ants")
 ax4.set_xlabel("Time (Secs)")
 ax4.set_ylabel("Tour cost")
 

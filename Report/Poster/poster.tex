@@ -27,6 +27,7 @@
 \renewcommand{\vec}[1]{\bm{#1}}
 \newcommand{\Tr}{\text{Tr}}
 \usepackage[T1]{fontenc}
+\usepackage{multicol}
 
 \title{Distributed Ant Colony Optimization on the Travelling Salesman Problem}
 \author{\textbf{Andrea Malleo}
@@ -44,6 +45,7 @@
     \column{0.25}
     \block{Problem}{
         \begin{itemize}
+        {\LARGE
             \item ACO is a probabilistic technique that leverages a distributed system of independent software agents 
                 to search the solution space. 
             
@@ -52,21 +54,28 @@
          as a distributed system.
         \item Elixir uses the actor model, which achieves concurrency via independent computing processes that
         communicate via asynchronous message passing instead of any shared memory.
-        
-        \item This model for synchronization greatly simplifies the shared read 
-        and write access of the pheremone matrix among all of the 'ants' by collecting and sharing 
-        path costs and pheremone values via messages. 
+
         \item What levels of speedup can we see over the serialized method as we dial up the number 
               of ants in the simulated colony?
-
+        }
     \end{itemize}
     }
     \block{Results}{
-        \includegraphics[width=1.0\linewidth,height=13.0cm]{ch130_performance_vs_ants.jpg}
-       \includegraphics[width=1.0\linewidth]{ch130_serial_vs_dist.jpg}
+        \includegraphics[width=1.0\linewidth,height=15.0cm]{ch130_performance_vs_ants.jpg}
        }
-    \block{Inverse Problem}{
+
+    \block{Process Architecture}{
+        \begin{multicols*}{2}
+            \begin{enumerate}
+                \item  Ant
+                \item  Graph manager 
+                \item Pheromone manager
+                \item Ant manager
+                \item Colony manager
+           \end{enumerate}
+        \end{multicols*}
     }
+   
 
     \column{0.50}
     \block{Main Idea}{
@@ -92,21 +101,29 @@
     \column{0.25}
     \block{Methods}{
         \begin{itemize}
+        {\LARGE
             \item Naturally, the ACO algorithm is iterative. Each round, every ant individually completes
         a tour of the graph. The paths are mostly random at first, favoring small steps, and
         incorporating  over time the collective intelligence of the colony of ants
         by weighting paths more heavily if they produced shorter tours on previous rounds by 
-        other ants. The goal is for the positive feedback mechanism, encapsulated in the pheremone matrix,
+        other ants. 
+        
+        \item The goal is for the positive feedback mechanism, encapsulated in the pheremone matrix,
         to lead to convergence to the best path.
+
+        \item The Actor model for synchronization greatly simplifies the shared read 
+        and write access of the pheremone matrix among all of the 'ants' by collecting and sharing 
+        path costs and pheremone values via messages. 
+        }
         \end{itemize}
 
     }
+    \block{Results}{
+       \includegraphics[width=1.0\linewidth,height=20.0cm]{ch130_serial_vs_dist.jpg}
+       }
+
     
-    \block{Process Architecture}{
-    }
-    
-    \block{Future Work}{
-    }
+
     
  
 \end{columns}
