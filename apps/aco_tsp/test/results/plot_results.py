@@ -16,6 +16,7 @@ plt.plot(convertToSecs(bays29_120_time), bays29_120_cost, label='120 ants')
 plt.plot(convertToSecs(bays29_240_time)[0:4], bays29_240_cost[0:4], label='240 ants')
 plt.plot([1,52],[1955,1955], label='Minimal Cost')
 plt.title("Distributed ACO Bays29 Performance")
+plt.xlim([0,30])
 plt.xlabel("Time (s)")
 plt.ylabel("Tour Cost")
 plt.legend()
@@ -35,7 +36,8 @@ plt.plot([1,500],[532,532], label='Minimal Cost')
 plt.title("Distributed ACO Eil76 Performance")
 plt.xlabel("Time (s)")
 plt.ylabel("Tour Cost")
-plt.ylim([530,750])
+plt.ylim([500,750])
+plt.xlim([1,300])
 plt.legend()
 
 plt.savefig("eil76_performance_vs_ants.jpg")
@@ -62,9 +64,10 @@ plt.clf()
 #Plot a280 scale with ants
 #########
 plt.plot(convertToSecs(a280_150_time), a280_150_cost, label='150 ants')
-#plt.plot(convertToSecs(a280_280_time), a280_280_cost, label='280 ants')
+plt.plot(convertToSecs(a280_280_time), a280_280_cost, label='280 ants')
 plt.plot([1,10000],[2568,2568], label='Minimal Cost')
 plt.title("Distributed ACO A280 Performance")
+plt.xlim([0,10000])
 plt.xlabel("Time (s)")
 plt.ylabel("Tour Cost")
 plt.legend()
@@ -158,6 +161,7 @@ ax4.label_outer()
 fig.suptitle("Eil76 Serial Vs Distributed")
 plt.savefig("eil76_serial_vs_dist.jpg")
 
+plt.clf()
 ##########
 #Plot Distributed Vs Serial ch130
 ##########
@@ -200,7 +204,28 @@ fig.suptitle("Ch130 Serial Vs Distributed")
 plt.savefig("ch130_serial_vs_dist.jpg")
 
 
-
+plt.clf()
 ##########
 #Plot Distributed Vs Serial a280
 ##########
+fig, ((ax1,ax2)) = plt.subplots(1,2)
+
+ax1.plot(convertToSecs(a280_150_time), a280_150_cost, label='distributed')
+ax1.plot(acopy_a280_150_time, acopy_a280_150_cost, label='serial')
+ax1.set_xlabel("Time (Secs)")
+ax1.set_ylabel("Tour cost")
+ax1.legend()
+ax1.set_title("150 ants")
+
+ax2.plot(convertToSecs(a280_280_time), a280_280_cost, label='distributed')
+ax2.plot(acopy_a280_280_time, acopy_a280_280_cost, label='serial')
+ax2.set_xlabel("Time (Secs)")
+ax2.set_ylabel("Tour cost")
+ax2.legend()
+ax2.set_title("280 ants")
+
+ax1.label_outer()
+ax2.label_outer()
+
+fig.suptitle("A280 Serial Vs Distributed")
+plt.savefig("a280_serial_vs_dist.jpg")

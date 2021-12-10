@@ -226,3 +226,30 @@ at 11010108 Colony Manager received new optimal tour of cost 2897.555967687372  
 at 14883757 Colony Manager received new optimal tour of cost 2866.891040244177  in round 2223:
 
 280
+at 5612 Colony Manager received new optimal tour of cost 5389.956235319813  in round 0:
+at 16099 Colony Manager received new optimal tour of cost 4364.592943001577  in round 1:
+at 26587 Colony Manager received new optimal tour of cost 4160.248401829549  in round 2:
+at 36876 Colony Manager received new optimal tour of cost 3904.888647288082  in round 3:
+at 56035 Colony Manager received new optimal tour of cost 3799.3171975584437  in round 5:
+at 65109 Colony Manager received new optimal tour of cost 3607.0197409106036  in round 6:
+at 99251 Colony Manager received new optimal tour of cost 3490.823187450502  in round 10:
+at 131229 Colony Manager received new optimal tour of cost 3415.743127122846  in round 14
+at 147078 Colony Manager received new optimal tour of cost 3410.956084984464  in round 16:
+at 171278 Colony Manager received new optimal tour of cost 3380.894600256758  in round 19:
+at 187332 Colony Manager received new optimal tour of cost 3315.578695328613  in round 21:
+at 203319 Colony Manager received new optimal tour of cost 3311.9826285243644  in round 23:
+at 211306 Colony Manager received new optimal tour of cost 3303.452148428801  in round 24:
+at 275154 Colony Manager received new optimal tour of cost 3246.2559188436417  in round 32:
+at 362516 Colony Manager received new optimal tour of cost 3233.7787865417145  in round 43:
+at 439719 Colony Manager received new optimal tour of cost 3170.984298639425  in round 53:
+at 547034 Colony Manager received new optimal tour of cost 3164.867086523228  in round 67:
+at 577871 Colony Manager received new optimal tour of cost 3106.038461553126  in round 71:
+at 769987 Colony Manager received new optimal tour of cost 3038.8574763756114  in round 96:
+at 1048798 Colony Manager received new optimal tour of cost 3029.7863855477585  in round 132:
+at 1241561 Colony Manager received new optimal tour of cost 3029.2999987193584  in round 157:
+at 2217469 Colony Manager received new optimal tour of cost 3024.0359451801437  in round 284:
+at 2255667 Colony Manager received new optimal tour of cost 3009.919510987586  in round 289:
+at 2548256 Colony Manager received new optimal tour of cost 3009.645505409865  in round 327:
+at 2571874 Colony Manager received new optimal tour of cost 2993.613065631931  in round 330:
+at 3257754 Colony Manager received new optimal tour of cost 2948.248086408697  in round 417:
+at 9429572 Colony Manager received new optimal tour of cost 2919.7834153152116  in round 1198:
